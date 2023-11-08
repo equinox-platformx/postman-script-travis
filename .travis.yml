@@ -1,8 +1,12 @@
 language: node_js
 
+install:
+  - npm install newman
+
 before_script:
   - node --version
   - npm --version
+  - newman --version
 
 script:
-  - newman run tests/SPA-SingleAppointment.postman_collection.json
+  - node_modules/.bin/newman run testcollections/SPA-SingleAppointment.postman_collection.json
