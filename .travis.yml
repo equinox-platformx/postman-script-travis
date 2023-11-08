@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+  - '20.9.0'
+
+install:
+  - npm install newman
+
+before_script:
+  - node --version
+  - npm --version
+
+script:
+  - node_modules/.bin/newman run tests/SPA-SingleAppointment.postman_collection.json

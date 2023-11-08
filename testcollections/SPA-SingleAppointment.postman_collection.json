@@ -1,0 +1,625 @@
+{
+	"info": {
+		"_postman_id": "cac146bc-d720-45f9-96da-0093530294fe",
+		"name": "SPA-Single Appointment",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29729325"
+	},
+	"item": [
+		{
+			"name": "timeslot",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"",
+							"console.log(\"Environment\",pm.environment.name);",
+							"pm.test(\"Response status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    var jsonData = pm.response.json();",
+							"    pm.environment.set(\"timeslotsResponse\", jsonData);",
+							"});",
+							"var requestDate = pm.environment.get(\"startDate\");",
+							"console.log(\"requestDate\",requestDate);",
+							"",
+							"pm.test(\"employeeId is a non-empty string\", function () {",
+							"    const responseData = pm.response.json();",
+							"    ",
+							"    pm.expect(responseData.result).to.be.an('array');",
+							"    responseData.result.forEach(function(result) {",
+							"        pm.expect(result.employeeId).to.be.a('string').and.to.have.lengthOf.at.least(1, \"employeeId should not be empty\");",
+							"        ",
+							"    });",
+							"});",
+							"",
+							"",
+							"pm.test(\"First name is a non-empty string\", function () {",
+							"  const responseData = pm.response.json();",
+							"  ",
+							"  pm.expect(responseData.result).to.be.an('array');",
+							"  responseData.result.forEach(function (employee) {",
+							"    pm.expect(employee.firstName).to.be.a('string').and.to.have.lengthOf.at.least(1, \"First name should not be empty\");",
+							"    //console.log(\"employeeId\",employee.employeeId);",
+							"  });",
+							"});",
+							"",
+							"",
+							"pm.test(\"lastName is a non-empty string\", function () {",
+							"    const responseData = pm.response.json();",
+							"    ",
+							"    pm.expect(responseData.result[0].lastName).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Value should not be empty\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const moment = require('moment');\r",
+							"// Get current date\r",
+							"let date = moment();\r",
+							"// Add 7 days\r",
+							"date.add(2, 'days');\r",
+							"pm.environment.set(\"startDate\", date.format(\"YYYY-MM-DD\"));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"locationId\": 209,\r\n    \"eventTypeId\": 365,\r\n    \"preference\": {\r\n        \"type\": \"PRACTITIONER\",\r\n        \"value\": 111113\r\n    },\r\n    \"addons\": [],\r\n    \"date\": \"{{startDate}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8008/event-manager-service/v1/events/practitioner/timeslots",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8008",
+					"path": [
+						"event-manager-service",
+						"v1",
+						"events",
+						"practitioner",
+						"timeslots"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create-single-appointment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"\r",
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.environment.set(\"eventSeriesId\", jsonData.eventSeriesId[0]);\r",
+							"    console.log(\"eventSeriesId\",jsonData.eventSeriesId[0]);\r",
+							"});\r",
+							"\r",
+							"// pm.test(\"Response has required fields\", function () {\r",
+							"//     const responseData = pm.response.json();\r",
+							"\r",
+							"//     pm.expect(responseData).to.be.an('object');\r",
+							"//     pm.expect(responseData.messages).to.exist.and.to.be.null;\r",
+							"//     pm.expect(responseData.eventSeriesId).to.exist.and.to.be.an('array').that.is.not.empty;\r",
+							"// });\r",
+							"\r",
+							"\r",
+							"pm.test(\"The messages field should be null\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"\r",
+							"    pm.expect(responseData.messages).to.be.null;\r",
+							"\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"eventSeriesId is an array with at least one element\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"\r",
+							"    pm.expect(responseData.eventSeriesId).to.be.an('array').and.to.have.lengthOf.at.least(1);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Elements in eventSeriesId are non-negative integers\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"\r",
+							"    pm.expect(responseData.eventSeriesId).to.be.an('array');\r",
+							"    responseData.eventSeriesId.forEach(function (element) {\r",
+							"        pm.expect(element).to.be.a('number').and.to.be.at.least(0);\r",
+							"    });\r",
+							"});\r",
+							"var jsonReq = JSON.parse(pm.request.body.raw);\r",
+							"console.log(\"request Time \",jsonReq.events[0].startTime);\r",
+							"console.log(\"request Date \",jsonReq.events[0].startDate);\r",
+							"console.log(\"Employee Ids\",jsonReq.events[0].employees);\r",
+							"pm.sendRequest({\r",
+							"    url: pm.globals.get(\"base_url\"),\r",
+							"        method: 'POST',\r",
+							"        header: {\r",
+							"        'Content-Type': 'application/json',\r",
+							"        },\r",
+							"        body: {\r",
+							"            mode: 'raw',\r",
+							"            raw: JSON.stringify({ \r",
+							"                'locationId': jsonReq.locationId,\r",
+							"                'eventTypeId': jsonReq.events[0].eventTypeId,\r",
+							"                'preference': {\r",
+							"                    'type': 'PRACTITIONER',\r",
+							"                    'value': '111113'\r",
+							"                },\r",
+							"                'date': jsonReq.events[0].startDate\r",
+							"            })\r",
+							"        }\r",
+							"    }, function (err, responseObj) {\r",
+							"        var newResponse = JSON.stringify(responseObj.json()); \r",
+							"        if(responseObj.json()!=null){\r",
+							"           const responseData = responseObj.json();\r",
+							"        pm.test(\"Both EmployeeId, Request time check with request time slot API\", function () {\r",
+							"            //console.log(\"newResponse\",newResponse);\r",
+							"           // console.log(\"responseData\",responseData);\r",
+							"        responseData.result.forEach(function (employee) {\r",
+							"         pm.expect(employee.firstName).to.be.a('string').and.to.have.lengthOf.at.least(1, \"First name should not be empty\");\r",
+							"            // console.log(\"employeeId\",employee.employeeId);\r",
+							"            jsonReq.events[0].employees.forEach(function(employeId){\r",
+							"                if(employee.employeeId==employeId){\r",
+							"                    console.log(\"EMployee TimeSLot\",employee.timeSlots);\r",
+							"                pm.expect(employee.employeeId).to.eql(employeId.toString());\r",
+							"                        if(employee.timeSlots!=null){\r",
+							"                    pm.expect(employee.timeSlots).to.exist.and.to.be.an('array');\r",
+							"                    employee.timeSlots.forEach(function (timeSlot) {\r",
+							"                    pm.expect(timeSlot.startTime).to.exist.and.to.be.a('string');\r",
+							"                    pm.expect(timeSlot.endTime).to.exist.and.to.be.a('string');\r",
+							"                    //console.log(\"start time- \",timeSlot.startTime);\r",
+							"                    pm.expect(timeSlot.startTime).to.not.eql(jsonReq.events[0].startTime);\r",
+							"\r",
+							"                        });\r",
+							"                }\r",
+							"            }\r",
+							"            });\r",
+							"    \r",
+							"         });\r",
+							"         \r",
+							"            });\r",
+							"        }\r",
+							"       \r",
+							"\t});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.globals.set(\"base_url\", \"http://localhost:8008/event-manager-service/v1/events/practitioner/timeslots\");\r",
+							"var timeslots = pm.environment.get(\"timeslotsResponse\");\r",
+							"console.log(\"In pre-request timeslots \",timeslots.result);\r",
+							"//timeslots.result.forEach(function (employee) {   \r",
+							"var employee=null;\r",
+							"    for(var i=0;i<timeslots.result.length;i++){   \r",
+							"         employee =timeslots.result[i];\r",
+							"         if(employee.employeeId!==null){             \r",
+							"              if(employee.timeSlots!=null && employee.timeSlots.length>0){\r",
+							"                  console.log(\"inside prerequest timeslots\",employee);                  \r",
+							"                  break;\r",
+							"             }\r",
+							"         }\r",
+							"    }\r",
+							"    //console.log(\"emplObj\",employee);\r",
+							"    if(employee!=null){\r",
+							"    pm.environment.set(\"employeeId\", employee.employeeId);\r",
+							"    pm.environment.set(\"startTime\", employee.timeSlots[0].startTime);\r",
+							"    }\r",
+							"         // });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"validationOnly\": false,\r\n  \"locationId\": 209,\r\n  \"appointmentNotes\": \"test create appointment note\",\r\n  \"createdBy\": 134,\r\n  \"events\": [\r\n    {\r\n      \"eventTypeId\": 365,\r\n      \"startDate\": \"{{startDate}}\",\r\n      \"startTime\": \"{{startTime}}\",\r\n      \"clients\": [\r\n        {\r\n          \"clientId\": \"170\",\r\n          \"payment\": {\r\n            \"paySourceId\": \"415855155\",\r\n            \"gratuity\": {\r\n              \"typeId\": 2,\r\n              \"value\": \"20\"\r\n            }\r\n          }\r\n        }\r\n      ],\r\n      \"employees\": [\r\n        {{employeeId}}\r\n      ]\r\n    }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8008/event-manager-service/v1/events",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8008",
+					"path": [
+						"event-manager-service",
+						"v1",
+						"events"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getInstanceDetailsByEventSeriesId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"",
+							"pm.test(\"Response status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"  var jsonData = pm.response.json();",
+							"  pm.environment.set(\"eventInstanceId\", jsonData.data[0].eventInstanceId);",
+							"  console.log(\"eventInstanceId\",jsonData.data[0].eventInstanceId);",
+							"  pm.environment.set(\"eventInstanceResponse\",jsonData);",
+							"});",
+							"",
+							"",
+							"pm.test(\"Validate the 'status' field in the response\", function () {",
+							"    const responseData = pm.response.json();",
+							"    ",
+							"    pm.expect(responseData.status).to.exist.and.to.be.a('string');",
+							"});",
+							"",
+							"",
+							"pm.test(\"Verify that the 'data' array is present and contains at least one element\", function () {",
+							"    const responseData = pm.response.json();",
+							"    ",
+							"    pm.expect(responseData.data).to.exist.and.to.be.an('array');",
+							"    pm.expect(responseData.data.length).to.be.at.least(1, \"Array should contain at least one element\");",
+							"});",
+							"",
+							"",
+							"pm.test(\"Validate presence of eventInstanceId, startLocalTime, and endLocalTime fields in data array\", function () {",
+							"    const responseData = pm.response.json();",
+							"    ",
+							"    pm.expect(responseData.data).to.be.an('array').and.to.have.lengthOf.at.least(1, \"Data array should not be empty\");",
+							"    ",
+							"    responseData.data.forEach(function(event) {",
+							"        pm.expect(event).to.have.property('eventInstanceId');",
+							"        pm.expect(event).to.have.property('startLocalTime');",
+							"        pm.expect(event).to.have.property('endLocalTime');",
+							"    });",
+							"});",
+							"// pm.test(\"Test for Given pre-request and response is equal or not\", function () {",
+							"//     const responseData = pm.response.json();",
+							"//     console.log(\"responseData\",responseData);",
+							"//     var InstanceId = pm.environment.get(\"InstanceId\");",
+							"//     var startLocalTime = pm.environment.get(\"startLocalTime\");",
+							"//    console.log(\"InstanceId>>\",InstanceId);",
+							"//    responseData.data.forEach(function (InstanceData) {",
+							"//        console.log(\"InstanceData :\",InstanceData.eventInstanceId);",
+							"//        console.log(\"InstanceId 22\",InstanceId);",
+							"//        //pm.expect(InstanceData.eventInstanceId).to.eql(InstanceId);",
+							"//       // pm.expect(InstanceData.startLocalTime).to.eql(InstanceId);",
+							"//       if(InstanceData.eventInstanceId==InstanceId){",
+							"//           console.log(\"checking for given\",InstanceId);",
+							"//           console.log(\"InstanceData.startLocalTime\",InstanceData.startLocalTime);",
+							"//           pm.expect(InstanceId).to.eql(InstanceData.eventInstanceId.toString());",
+							"//           pm.expect(startLocalTime).to.eql(InstanceData.startLocalTime);",
+							"//       }",
+							"//    });",
+							"// });",
+							"//pm.environment.set(\"timeslotsResponse\", \"\");",
+							"//pm.environment.set(\"startTime\", \"\");",
+							"//pm.environment.set(\"rescheduleEventSeriesId\", \"\");"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// pm.environment.set(\"InstanceId\", \"514\");\r",
+							"// pm.environment.set(\"startLocalTime\", \"2023-10-10T16:30:00\");\r",
+							"// pm.environment.set(\"endLocalTime\", \"2023-10-10T17:30:00\");\r",
+							"// pm.environment.set(\"startTimeUtc\", \"2023-10-10T20:30:00\");\r",
+							"// pm.environment.set(\"endTimeUtc\", \"2023-10-10T21:30:00\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8008/event-manager-service/v1/events/eventInstacedetails/{{eventSeriesId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8008",
+					"path": [
+						"event-manager-service",
+						"v1",
+						"events",
+						"eventInstacedetails",
+						"{{eventSeriesId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Reschedule-Single",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var eventInstanceId = pm.environment.get(\"eventInstanceId\");",
+							"console.log(\"In reschedule eventInstanceId\",eventInstanceId);",
+							"console.log(\"response from getInstance \",pm.environment.get(\"eventInstanceResponse\"));",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    var jsonData = pm.response.json();",
+							"    pm.environment.set(\"rescheduleEventSeriesId\", jsonData.eventSeriesId[0]);",
+							"    console.log(\"rescheduleEventSeriesId\",jsonData.eventSeriesId[0]);",
+							"});",
+							"",
+							"var jsonReq = JSON.parse(pm.request.body.raw);",
+							"console.log(\"Reschedule jsonReq\",jsonReq);",
+							"console.log(\"Reschedule request Date \",jsonReq.event.startDate);",
+							"console.log(\"Reschedule request Time \",jsonReq.event.startTime);",
+							"console.log(\"Reschedule EmployeeIds\",jsonReq.event.employees)",
+							"pm.sendRequest({",
+							"    url: pm.globals.get(\"base_url\"),",
+							"        method: 'POST',",
+							"        header: {",
+							"        'Content-Type': 'application/json',",
+							"        },",
+							"        body: {",
+							"            mode: 'raw',",
+							"            raw: JSON.stringify({ ",
+							"                'locationId': '209',",
+							"                'eventTypeId': '365',",
+							"                'preference': {",
+							"                    'type': 'PRACTITIONER',",
+							"                    'value': '111113'",
+							"                },",
+							"                'date': jsonReq.event.startDate",
+							"            })",
+							"        }",
+							"    }, function (err, responseObj) {",
+							"        var newResponse = JSON.stringify(responseObj.json()); ",
+							"        if(responseObj.json()!=null){",
+							"           const responseData = responseObj.json();",
+							"        pm.test(\"Both EmployeeId, Request time check with request time slot API\", function () {",
+							"            //console.log(\"newResponse\",newResponse);",
+							"           // console.log(\"responseData\",responseData);",
+							"        responseData.result.forEach(function (employee) {",
+							"         pm.expect(employee.firstName).to.be.a('string').and.to.have.lengthOf.at.least(1, \"First name should not be empty\");",
+							"            // console.log(\"employeeId\",employee.employeeId);",
+							"            jsonReq.event.employees.forEach(function(employeId){",
+							"                if(employee.employeeId==employeId){",
+							"                    console.log(\"EMployee TimeSLot\",employee.timeSlots);",
+							"                pm.expect(employee.employeeId).to.eql(employeId.toString());",
+							"                if(employee.timeSlots!=null){",
+							"                    pm.expect(employee.timeSlots).to.exist.and.to.be.an('array');",
+							"                    employee.timeSlots.forEach(function (timeSlot) {",
+							"                    pm.expect(timeSlot.startTime).to.exist.and.to.be.a('string');",
+							"                    pm.expect(timeSlot.endTime).to.exist.and.to.be.a('string');",
+							"                    console.log(\"start time- \",timeSlot.startTime);",
+							"                    pm.expect(timeSlot.startTime).to.not.eql(jsonReq.event.startTime);",
+							"",
+							"                        });",
+							"                }",
+							"            }",
+							"            });",
+							"    ",
+							"         });",
+							"         ",
+							"            });",
+							"        }",
+							"       ",
+							"\t});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.globals.set(\"base_url\", \"http://localhost:8008/event-manager-service/v1/events/practitioner/timeslots\");\r",
+							"var timeslots = pm.environment.get(\"timeslotsResponse\");\r",
+							"console.log(\"In pre-request timeslots \",timeslots.result);\r",
+							"//timeslots.result.forEach(function (employee) {   \r",
+							"var employee=null;\r",
+							"    for(var i=0;i<timeslots.result.length;i++){   \r",
+							"         employee =timeslots.result[i];\r",
+							"         if(employee.employeeId!==null){             \r",
+							"              if(employee.timeSlots!=null && employee.timeSlots.length>0){\r",
+							"                  console.log(\"inside prerequest timeslots\",employee);                  \r",
+							"                  break;\r",
+							"             }\r",
+							"         }\r",
+							"    }\r",
+							"    //console.log(\"emplObj\",employee);\r",
+							"    if(employee!=null){\r",
+							"    pm.environment.set(\"employeeId\", employee.employeeId);\r",
+							"    pm.environment.set(\"startTime\", employee.timeSlots[0].startTime);\r",
+							"    }\r",
+							"         // });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"applyToSeries\": false,\r\n  \"validationOnly\": false,\r\n  \"rescheduledBy\": \"134\",\r\n  \"appointmentNotes\": \"test reshedule\",\r\n  \"event\": {\r\n    \"startDate\": \"{{startDate}}\",\r\n    \"startTime\": \"{{startTime}}\",\r\n    \"employees\": [\r\n        {{employeeId}}\r\n      ]\r\n      \r\n  }\r\n  \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8008/event-manager-service/v1/events/{{eventInstanceId}}/reschedule",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8008",
+					"path": [
+						"event-manager-service",
+						"v1",
+						"events",
+						"{{eventInstanceId}}",
+						"reschedule"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getInstanceDetailsAfterReschedule",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"",
+							"pm.test(\"Response status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"  var jsonData = pm.response.json();",
+							"  pm.environment.set(\"eventInstanceIdToCncel\", jsonData.data[0].eventInstanceId);",
+							"  console.log(\"eventInstanceIdToCncel\",jsonData.data[0].eventInstanceId);",
+							"  //console.log(\"StartTimeLOcal\",jsonData.data[0].startLocalTime);",
+							"",
+							"});",
+							"",
+							"",
+							"pm.test(\"Validate the 'status' field in the response\", function () {",
+							"    const responseData = pm.response.json();",
+							"    ",
+							"    pm.expect(responseData.status).to.exist.and.to.be.a('string');",
+							"});",
+							"",
+							"",
+							"pm.test(\"Verify that the 'data' array is present and contains at least one element\", function () {",
+							"    const responseData = pm.response.json();",
+							"    ",
+							"    pm.expect(responseData.data).to.exist.and.to.be.an('array');",
+							"    pm.expect(responseData.data.length).to.be.at.least(1, \"Array should contain at least one element\");",
+							"});",
+							"",
+							"",
+							"pm.test(\"Validate presence of eventInstanceId, startLocalTime, and endLocalTime fields in data array\", function () {",
+							"    const responseData = pm.response.json();",
+							"    ",
+							"    pm.expect(responseData.data).to.be.an('array').and.to.have.lengthOf.at.least(1, \"Data array should not be empty\");",
+							"    ",
+							"    responseData.data.forEach(function(event) {",
+							"        pm.expect(event).to.have.property('eventInstanceId');",
+							"        pm.expect(event).to.have.property('startLocalTime');",
+							"        pm.expect(event).to.have.property('endLocalTime');",
+							"    });",
+							"});",
+							"// pm.test(\"Test for Given pre-request and response is equal or not\", function () {",
+							"//     const responseData = pm.response.json();",
+							"//     console.log(\"responseData\",responseData);",
+							"//     var InstanceId = pm.environment.get(\"InstanceId\");",
+							"//     var startLocalTime = pm.environment.get(\"startLocalTime\");",
+							"//    console.log(\"InstanceId>>\",InstanceId);",
+							"//    responseData.data.forEach(function (InstanceData) {",
+							"//        console.log(\"InstanceData :\",InstanceData.eventInstanceId);",
+							"//        console.log(\"InstanceId 22\",InstanceId);",
+							"//        //pm.expect(InstanceData.eventInstanceId).to.eql(InstanceId);",
+							"//       // pm.expect(InstanceData.startLocalTime).to.eql(InstanceId);",
+							"//       if(InstanceData.eventInstanceId==InstanceId){",
+							"//           console.log(\"checking for given\",InstanceId);",
+							"//           console.log(\"InstanceData.startLocalTime\",InstanceData.startLocalTime);",
+							"//           pm.expect(InstanceId).to.eql(InstanceData.eventInstanceId.toString());",
+							"//           pm.expect(startLocalTime).to.eql(InstanceData.startLocalTime);",
+							"//       }",
+							"//    });",
+							"// });",
+							"pm.environment.set(\"eventSeriesId\", \"\");",
+							"pm.environment.set(\"eventInstanceId\", \"\");",
+							"pm.environment.set(\"rescheduleEventSeriesId\", \"\");",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// pm.environment.set(\"InstanceId\", \"514\");\r",
+							"// pm.environment.set(\"startLocalTime\", \"2023-10-10T16:30:00\");\r",
+							"// pm.environment.set(\"endLocalTime\", \"2023-10-10T17:30:00\");\r",
+							"// pm.environment.set(\"startTimeUtc\", \"2023-10-10T20:30:00\");\r",
+							"// pm.environment.set(\"endTimeUtc\", \"2023-10-10T21:30:00\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8008/event-manager-service/v1/events/eventInstacedetails/{{rescheduleEventSeriesId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8008",
+					"path": [
+						"event-manager-service",
+						"v1",
+						"events",
+						"eventInstacedetails",
+						"{{rescheduleEventSeriesId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
